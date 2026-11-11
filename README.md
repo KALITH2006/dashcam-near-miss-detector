@@ -117,4 +117,4 @@ No video is included in this repository. The test clips used during development 
 
 ## Licence
 
-No licence has been chosen yet. Until one is added, all rights are reserved by the author.
+Released under the [MIT Licence](LICENSE). The licence covers the code in this repository only. The YOLOv8 weights and the `ultralytics` package have their own licence (AGPL-3.0), so check it before using this project in a product.
