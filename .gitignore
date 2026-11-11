@@ -21,3 +21,16 @@ outputs_*/
 Thumbs.db
 .vscode/
 .idea/
+
+# Secrets and credentials (never commit these)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+secrets.*
+credentials*.json
+*.token
