@@ -1,0 +1,8 @@
+numpy>=1.24
+opencv-python>=4.8
+scipy>=1.10
+matplotlib>=3.7
+ultralytics>=8.2      # YOLO detector (only needed for --detector yolo)
+imageio-ffmpeg>=0.5   # bundled ffmpeg so the annotated video plays in the browser
+flask>=3.0         # web app (python server.py)
+pandas>=2.0       # event tables in the web app

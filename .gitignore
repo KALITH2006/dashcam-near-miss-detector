@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Videos, model weights and run outputs (large, and the clips are not ours to redistribute)
+data/
+demo/
+jobs/
+outputs/
+outputs_*/
+*.log
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.pt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

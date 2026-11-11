@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Near-Miss — drive review</title>
+<style>
+:root{
+  --bg:#0e0f11;--panel:#141518;--rule:#2a2b30;--text:#ebe8e0;--mute:#8d8b84;--faint:#5c5b57;
+  --ok:#86b58c;--c1:#d6b04a;--c2:#e08a2e;--c3:#e5533d;--signal:#f2b134;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --mono:"Cascadia Mono",Consolas,"SFMono-Regular","Courier New",monospace;
+  --sans:"Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;color:var(--text);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1360px;margin:0 auto;padding:0 28px 60px}
+.hide{display:none!important}
+.mono{font-family:var(--mono)}
+.label{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+/* masthead */
+.mast{display:flex;align-items:baseline;justify-content:space-between;padding:22px 0 14px;border-bottom:1px solid var(--rule)}
+.word{font:italic 400 1.55rem/1 var(--serif);letter-spacing:-.01em}
+.word b{font-style:normal;font-weight:700}
+.mast .label span{color:var(--text)}
+/* panels */
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:2px}
+.ph{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--rule)}
+.pb{padding:14px}
+button,.btn{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+  background:transparent;color:var(--text);border:1px solid var(--text);padding:11px 16px;border-radius:2px;text-decoration:none;display:inline-block}
+button:hover,.btn:hover{background:var(--text);color:var(--bg)}
+button.solid{background:var(--signal);border-color:var(--signal);color:#17120a}
+button.solid:hover{background:var(--text);border-color:var(--text)}
+a.lnk{color:var(--signal);cursor:pointer;border-bottom:1px solid #f2b13466}
+/* landing */
+.land{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;padding:64px 0 20px;align-items:center}
+@media(max-width:900px){.land{grid-template-columns:1fr;gap:28px;padding-top:32px}}
+.land h1{font:400 clamp(2.6rem,6vw,4.6rem)/.98 var(--serif);letter-spacing:-.025em;margin:0 0 20px}
+.land h1 em{color:var(--signal)}
+.land p.lead{font-size:1.08rem;color:#c9c6bd;max-width:34em;margin:0 0 22px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--rule);margin-top:30px}
+.facts div{padding:12px 14px 0 0}.facts .label{display:block;margin-bottom:5px}.facts span.t{font-size:.88rem;color:#b8b5ac}
+#drop{border:1px dashed #55544f;padding:46px 28px;text-align:left;transition:.15s;background:var(--panel)}
+#drop.over{border-color:var(--signal);background:#1a1810}
+#drop h2{font:400 1.5rem/1.2 var(--serif);margin:0 0 6px}
+#drop p{margin:0 0 20px;color:var(--mute);font-size:.92rem}
+.err{margin-top:14px;padding:10px 12px;border:1px solid var(--c3);color:#f1b3a8;font-size:.9rem}
+/* progress */
+#prog{padding:90px 0 40px;max-width:640px}
+#prog .big{font:400 3.6rem/1 var(--serif);margin:10px 0 18px}
+.rail{height:2px;background:var(--rule);position:relative;margin-bottom:12px}.rail i{position:absolute;left:0;top:0;height:2px;background:var(--signal);width:0;transition:width .4s}
+/* results grid */
+#res{padding-top:20px}
+.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(330px,.9fr);gap:16px;align-items:start}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}}
+video{display:block;width:100%;background:#000;max-height:58vh}
+.readout{display:flex;gap:0;border-top:1px solid var(--rule);font:12px/1.3 var(--mono);flex-wrap:wrap}
+.readout>div{padding:10px 14px;border-right:1px solid var(--rule);min-width:92px}
+.readout>div:last-child{border-right:0;flex:1}
+.readout .label{display:block;margin-bottom:5px;font-size:10px}
+.readout b{font-weight:500;font-size:14px}
+.score{padding:18px 18px 16px}
+.score .num{font:400 6.4rem/.9 var(--serif);letter-spacing:-.04em}
+.score .num small{font:400 1rem var(--mono);color:var(--mute);letter-spacing:0;margin-left:8px}
+.score .verdict{font:italic 400 1.25rem/1.2 var(--serif);margin:10px 0 14px}
+.tally{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule)}
+.tally div{padding:11px 0 0}.tally b{font:400 2rem/1 var(--serif);display:block;margin-top:5px}
+.fine{font:11px/1.5 var(--mono);color:var(--faint);margin-top:12px}
+#radar{display:block;width:100%;height:360px}
+.tl{margin-top:16px}
+#tl{display:block;width:100%;cursor:crosshair;touch-action:none}
+.log{margin-top:16px}
+.filters{display:flex;gap:16px}.filters a{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);cursor:pointer;padding-bottom:3px}
+.filters a.on{color:var(--text);border-bottom:1px solid var(--signal)}
+table{width:100%;border-collapse:collapse}
+th{font:500 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);text-align:left;padding:10px 14px;border-bottom:1px solid var(--rule)}
+td{padding:12px 14px;border-bottom:1px solid #202125;font-size:.92rem}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.ev{cursor:pointer}tr.ev:hover td{background:#191a1e}tr.ev.active td{background:#1d1c16}
+.sev{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.sev:before{content:"";display:inline-block;width:8px;height:8px;margin-right:8px;background:currentColor}
+.foot{display:flex;gap:10px;margin-top:16px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+#tip{position:fixed;pointer-events:none;background:var(--text);color:var(--bg);padding:5px 9px;font:11px var(--mono);z-index:9;display:none;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="mast"><div class="word">Near<b>-Miss</b></div><div class="label" id="mastr">Drive review</div></div>
+
+<section id="upload">
+  <div class="land">
+    <div>
+      <div class="label" style="margin-bottom:18px">Dash-cam analysis</div>
+      <h1>Every close call in your drive, <em>found.</em></h1>
+      <p class="lead">Give it a dash-cam video. It follows each vehicle on the road, measures how fast the gap is closing, and marks the moments that could have ended badly.</p>
+      <p style="color:var(--mute);font-size:.92rem;margin:0">No settings: the camera angle and frame rate are worked out from the footage.</p>
+      <div class="facts">
+        <div><span class="label">Sees</span><span class="t">Cars, trucks, buses, motorbikes, bikes</span></div>
+        <div><span class="label">Measures</span><span class="t">Distance and time to impact</span></div>
+        <div><span class="label">Reports</span><span class="t">Each moment, with a link to the footage</span></div>
+      </div>
+    </div>
+    <div>
+      <div id="drop">
+        <div class="label" style="margin-bottom:14px">Step 1</div>
+        <h2>Choose a video file</h2>
+        <p>MP4, MOV, AVI or MKV. Drag it onto this box, or browse.</p>
+        <input id="file" type="file" accept="video/*" hidden>
+        <button class="solid" id="pick">Browse files</button>
+      </div>
+      <p style="margin:14px 0 0;color:var(--mute);font-size:.9rem">No footage handy? <a class="lnk" id="demo">Run the built-in sample scene</a>.</p>
+      <div id="err" class="err hide"></div>
+    </div>
+  </div>
+</section>
+
+<section id="prog" class="hide">
+  <div class="label" id="stage">Starting</div>
+  <div class="big"><span id="pct">0</span><span style="font-size:1.6rem;color:var(--mute)">%</span></div>
+  <div class="rail"><i id="barfill"></i></div>
+  <div class="label" style="text-transform:none;letter-spacing:.04em">Elapsed <span id="elapsed">0:00</span> &nbsp;·&nbsp; a long video can take several minutes on an ordinary computer</div>
+</section>
+
+<section id="res" class="hide">
+  <div class="grid">
+    <div class="panel">
+      <video id="v" controls playsinline preload="auto"></video>
+      <div class="readout">
+        <div><span class="label">Time</span><b id="rt">0:00.0</b></div>
+        <div><span class="label">Risk</span><b id="rr">0</b></div>
+        <div><span class="label">State</span><b id="rs">SAFE</b></div>
+        <div><span class="label">Gap</span><b id="rg">—</b></div>
+        <div><span class="label">Impact in</span><b id="ri">—</b></div>
+        <div id="rtxt" style="color:var(--mute)"></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="panel score">
+        <div class="label">Safety score</div>
+        <div class="num"><span id="sc">0</span><small>/ 100</small></div>
+        <div class="verdict" id="verdict"></div>
+        <div class="tally"><div><span class="label">Dangerous</span><b id="nd">0</b></div><div><span class="label">Close calls</span><b id="nc">0</b></div></div>
+        <div class="fine">100 − 12 per dangerous moment − 5 per close call</div>
+      </div>
+      <div class="panel">
+        <div class="ph"><span class="label">Radar · top-down</span><span class="label" id="radarcap"></span></div>
+        <canvas id="radar"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel tl">
+    <div class="ph"><span class="label">Threat timeline · one row per vehicle</span><span class="label">click or drag to move the video</span></div>
+    <canvas id="tl"></canvas>
+  </div>
+
+  <div class="panel log">
+    <div class="ph"><span class="label">Moments to review</span>
+      <div class="filters"><a class="on" data-f="all">All</a><a data-f="d">Dangerous</a><a data-f="c">Close calls</a></div></div>
+    <table><thead><tr><th>At</th><th>Vehicle</th><th>What happened</th><th>Severity</th><th>Gap</th><th>Impact in</th></tr></thead><tbody id="list"></tbody></table>
+  </div>
+  <div class="foot">
+    <span class="fine" style="margin:0">Space play/pause · ←/→ ±5 s · N / P next / previous moment</span>
+    <span style="display:flex;gap:10px"><a class="btn" id="csv">Download CSV</a><button id="again">New video</button></span>
+  </div>
+</section>
+</div>
+<div id="tip"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const WHAT={"CUT-IN":"Cut in front of you","FRONTAL":"Very close ahead","REAR-END":"Closing in from behind",
+ "SIDE-LEFT":"Too close on the left","SIDE-RIGHT":"Too close on the right","NONE":"Nearby"};
+const SIZE={car:[1.8,4.4],truck:[2.5,8],bus:[2.5,10],motorcycle:[.8,2.1],bicycle:[.6,1.8]};
+const rcol=r=>r>=75?"#e5533d":r>=50?"#e08a2e":r>=25?"#d6b04a":"#86b58c";
+const lvlName=r=>r>=75?"DANGER":r>=50?"WARNING":r>=25?"CAUTION":"SAFE";
+const fmt=t=>{const m=Math.floor(t/60),s=t-m*60;return m+":"+(s<10?"0":"")+s.toFixed(1)};
+let R=null,EV=[],F=[],LANES=[],filter="all",jid=null,t0=0,timer=null;
+
+function show(id){["upload","prog","res"].forEach(s=>$(s).classList.toggle("hide",s!==id));
+  $("mastr").innerHTML=id==="res"?"Drive review · <span>"+fmt(R.duration)+"</span>":"Drive review"}
+function fail(m){clearInterval(timer);show("upload");const e=$("err");e.textContent="The analysis failed: "+m;e.classList.remove("hide")}
+
+/* ---------- upload ---------- */
+const drop=$("drop"),file=$("file");
+$("pick").onclick=()=>file.click();
+["dragover","dragenter"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add("over")}));
+["dragleave","drop"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove("over")}));
+drop.addEventListener("drop",e=>{if(e.dataTransfer.files[0])start(e.dataTransfer.files[0])});
+file.onchange=()=>{if(file.files[0])start(file.files[0])};
+$("demo").onclick=()=>start(null);
+$("again").onclick=()=>{$("v").pause();R=null;history.replaceState(null,"","/");show("upload");file.value=""};
+
+async function start(f){
+  $("err").classList.add("hide");show("prog");setProg(0,"Uploading");
+  t0=Date.now();clearInterval(timer);timer=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);
+    $("elapsed").textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0")},500);
+  try{
+    let r;
+    if(f){const fd=new FormData();fd.append("video",f);r=await fetch("/api/start",{method:"POST",body:fd})}
+    else r=await fetch("/api/start?demo=1",{method:"POST"});
+    const j=await r.json();if(!r.ok)throw new Error(j.error||"upload failed");
+    jid=j.id;history.replaceState(null,"","#"+jid);poll();
+  }catch(e){fail(e.message)}
+}
+function setProg(p,s){$("barfill").style.width=Math.round(p*100)+"%";$("pct").textContent=Math.round(p*100);$("stage").textContent=s}
+async function poll(){
+  try{
+    const s=await (await fetch("/api/status/"+jid)).json();
+    if(s.state==="error")return fail(s.error);
+    if(s.state==="done"){clearInterval(timer);R=await (await fetch("/api/result/"+jid)).json();return render()}
+    setProg(s.progress||0,s.stage||"Working");setTimeout(poll,700);
+  }catch(e){fail(e.message)}
+}
+
+/* ---------- results ---------- */
+function prepare(){
+  EV=R.events.map(e=>({...e,d:e.event==="COLLISION-IMMINENT"})).sort((a,b)=>a.time_s-b.time_s);
+  F=[];let last=null;                              // frames grouped by time for the radar
+  for(const [t,id,cls,x,z,r] of R.tracks){
+    if(!last||last.t!==t){last={t,rows:[]};F.push(last)}
+    last.rows.push([id,cls,x,z,r]);
+  }
+  const by=new Map();                              // one lane per vehicle that mattered
+  for(const [t,id,cls,x,z,r] of R.tracks){if(!by.has(id))by.set(id,{id,cls,pts:[],peak:0});const l=by.get(id);l.pts.push([t,r]);l.peak=Math.max(l.peak,r)}
+  LANES=[...by.values()].filter(l=>l.peak>=25).sort((a,b)=>b.peak-a.peak).slice(0,14).sort((a,b)=>a.pts[0][0]-b.pts[0][0]);
+}
+function render(){
+  prepare();
+  const nd=EV.filter(e=>e.d).length,nc=EV.length-nd,score=Math.max(0,100-12*nd-5*nc);
+  show("res");const v=$("v");v.src=R.video;v.load();
+  const t0q=parseFloat(new URLSearchParams(location.search).get("t"));          // /?t=8#<id> opens at 8 s
+  if(!isNaN(t0q))v.addEventListener("loadedmetadata",()=>{v.currentTime=t0q;update()},{once:true});
+  $("sc").textContent=score;$("nd").textContent=nd;$("nc").textContent=nc;$("csv").href=`/events/${jid}.csv`;
+  $("verdict").textContent=!EV.length?"No near-misses in this drive.":score>=80?"Mostly a safe drive, with a few tense moments.":score>=50?"Several risky moments.":"A risky drive.";
+  $("radarcap").textContent=R.camera==="rear"?"vehicles behind you":"vehicles ahead of you";
+  list();sizeAll();update();
+}
+function list(){
+  const box=$("list");box.innerHTML="";
+  if(!EV.length){box.innerHTML='<tr><td colspan="6" style="color:var(--ok)">No near-misses were found in this video.</td></tr>';return}
+  EV.filter(e=>filter==="all"||(filter==="d"?e.d:!e.d)).forEach(e=>{
+    const tr=document.createElement("tr");tr.className="ev";tr.dataset.t=e.time_s;
+    tr.innerHTML=`<td class="n">${fmt(e.time_s)}</td><td>${e.class[0].toUpperCase()+e.class.slice(1)} <span class="mono" style="color:var(--faint)">#${e.track_id}</span></td>
+      <td>${WHAT[e.collision_type]||e.collision_type}</td>
+      <td><span class="sev" style="color:${e.d?"var(--c3)":"var(--c2)"}">${e.d?"Dangerous":"Close call"}</span></td>
+      <td class="n">${e.dist_at_peak_m!=null?e.dist_at_peak_m+" m":"—"}</td><td class="n">${e.min_ttc_s!=null?e.min_ttc_s+" s":"—"}</td>`;
+    tr.onclick=()=>seek(e.time_s-1.5,true);box.appendChild(tr);
+  });
+}
+document.querySelectorAll(".filters a").forEach(a=>a.onclick=()=>{
+  document.querySelectorAll(".filters a").forEach(x=>x.classList.toggle("on",x===a));filter=a.dataset.f;list();update()});
+function seek(t,play){const v=$("v");v.currentTime=Math.max(0,Math.min(t,R.duration));if(play)v.play();update()}
+
+/* ---------- lookups ---------- */
+function nearest(arr,t,get){
+  if(!arr.length)return -1;let lo=0,hi=arr.length-1;
+  while(lo<hi){const m=(lo+hi)>>1;get(arr[m])<t?lo=m+1:hi=m}
+  if(lo>0&&Math.abs(get(arr[lo-1])-t)<Math.abs(get(arr[lo])-t))lo--;return lo;
+}
+const sampleAt=t=>{const i=nearest(R.samples,t,s=>s[0]);return i>=0&&Math.abs(R.samples[i][0]-t)<1.2?R.samples[i]:null};
+
+/* ---------- readout + redraw ---------- */
+function update(){
+  if(!R)return;const v=$("v"),t=v.currentTime||0,s=sampleAt(t);
+  const r=s?s[1]:0;$("rt").textContent=fmt(t);$("rr").textContent=Math.round(r);
+  const st=$("rs");st.textContent=lvlName(r);st.style.color=rcol(r);$("rr").style.color=rcol(r);
+  let gap="—",ttc="—",txt="No vehicle is a threat";
+  if(s&&s[2]!=="SAFE"){gap=Math.round(s[5])+" m";ttc=s[6]!=null?s[6]+" s":"—";txt=(WHAT[s[3]]||"Nearby")+" · "+s[4]+" · "+s[7]+" tracked"}
+  else if(s)txt=s[7]+" vehicle"+(s[7]>1?"s":"")+" tracked, none a threat";
+  $("rg").textContent=gap;$("ri").textContent=ttc;$("rtxt").textContent=txt;
+  document.querySelectorAll("tr.ev").forEach(e=>e.classList.toggle("active",Math.abs(+e.dataset.t-t)<2));
+  drawTL(t);drawRadar(t);
+}
+$("v").addEventListener("timeupdate",update);$("v").addEventListener("seeked",update);
+(function loop(){if(R&&!$("v").paused)update();requestAnimationFrame(loop)})();
+
+/* ---------- canvases ---------- */
+function fit(c,h){const d=devicePixelRatio||1,w=c.clientWidth;c.style.height=h+"px";c.width=w*d;c.height=h*d;const x=c.getContext("2d");x.setTransform(d,0,0,d,0,0);return[x,w,h]}
+const TL={PL:78,PR:16,RU:22,PK:70,LH:13,LG:4};
+let tlc,tlW,tlH,hoverX=null;
+function sizeAll(){
+  const h=TL.RU+TL.PK+12+LANES.length*(TL.LH+TL.LG)+12;
+  [tlc,tlW,tlH]=fit($("tl"),h);fit($("radar"),360);
+}
+addEventListener("resize",()=>{if(R){sizeAll();update()}});
+const TX=t=>TL.PL+(tlW-TL.PL-TL.PR)*t/R.duration,invTX=x=>(x-TL.PL)/(tlW-TL.PL-TL.PR)*R.duration;
+
+function drawTL(t){
+  if(!tlc)return;const c=tlc,W=tlW,H=tlH,D=R.duration;c.clearRect(0,0,W,H);
+  c.font="10px Cascadia Mono,Consolas,monospace";c.textBaseline="middle";
+  // ruler
+  const step=D>240?60:D>120?30:D>40?10:D>15?5:1;c.fillStyle="#5c5b57";c.textAlign="center";c.strokeStyle="#2a2b30";c.lineWidth=1;
+  for(let s=0;s<=D;s+=step){const x=Math.round(TX(s))+.5;c.beginPath();c.moveTo(x,TL.RU-4);c.lineTo(x,H-6);c.stroke();c.fillText(fmt(s).replace(/\.0$/,""),x,8)}
+  // peak-risk band
+  const top=TL.RU,base=TL.RU+TL.PK,Y=r=>base-(TL.PK-4)*r/100;
+  c.textAlign="right";c.fillStyle="#5c5b57";[[75,"75"],[50,"50"]].forEach(([r,l])=>{c.setLineDash([2,4]);c.strokeStyle="#3a3b40";
+    c.beginPath();c.moveTo(TL.PL,Y(r)+.5);c.lineTo(W-TL.PR,Y(r)+.5);c.stroke();c.setLineDash([]);c.fillText(l,TL.PL-8,Y(r))});
+  c.fillText("PEAK",TL.PL-8,base-8);
+  const S=R.samples;
+  if(S.length){
+    c.beginPath();c.moveTo(TX(S[0][0]),base);S.forEach(s=>c.lineTo(TX(s[0]),Y(s[1])));c.lineTo(TX(S[S.length-1][0]),base);c.closePath();
+    c.fillStyle="rgba(235,232,224,.07)";c.fill();
+    for(let i=1;i<S.length;i++){c.beginPath();c.moveTo(TX(S[i-1][0]),Y(S[i-1][1]));c.lineTo(TX(S[i][0]),Y(S[i][1]));
+      c.strokeStyle=rcol(S[i][1]);c.lineWidth=1.6;c.stroke()}
+  }
+  c.strokeStyle="#2a2b30";c.lineWidth=1;c.beginPath();c.moveTo(TL.PL,base+.5);c.lineTo(W-TL.PR,base+.5);c.stroke();
+  // lanes
+  LANES.forEach((l,i)=>{
+    const y=base+12+i*(TL.LH+TL.LG);c.fillStyle="#8d8b84";c.textAlign="right";
+    c.fillText("#"+l.id+" "+l.cls.slice(0,5),TL.PL-8,y+TL.LH/2);
+    c.fillStyle="#1b1c20";c.fillRect(TL.PL,y,W-TL.PL-TL.PR,TL.LH);
+    for(let k=0;k<l.pts.length;k++){const [pt,pr]=l.pts[k],nx=k+1<l.pts.length?l.pts[k+1][0]:pt+.1;
+      c.globalAlpha=.3+.7*Math.min(pr,100)/100;c.fillStyle=rcol(pr);
+      c.fillRect(TX(pt),y,Math.max(1.2,TX(Math.min(nx,pt+.4))-TX(pt)),TL.LH)}
+    c.globalAlpha=1;
+  });
+  // events on ruler
+  EV.forEach(e=>{const x=TX(e.time_s);c.fillStyle=e.d?"#e5533d":"#e08a2e";c.beginPath();c.moveTo(x-4,TL.RU+1);c.lineTo(x+4,TL.RU+1);c.lineTo(x,TL.RU+8);c.closePath();c.fill()});
+  if(hoverX!==null){c.strokeStyle="rgba(235,232,224,.3)";c.beginPath();c.moveTo(hoverX+.5,TL.RU);c.lineTo(hoverX+.5,H-6);c.stroke()}
+  const x=TX(t);c.strokeStyle="#f2b134";c.lineWidth=1.5;c.beginPath();c.moveTo(x,TL.RU-2);c.lineTo(x,H-6);c.stroke();
+}
+function drawRadar(t){
+  const cv=$("radar"),W=cv.clientWidth,H=360,c=cv.getContext("2d");c.clearRect(0,0,W,H);
+  const rear=R.camera==="rear",RANGE=36,mpp=(H-46)/RANGE,cx=W/2,egoY=H-26;
+  const px=(x,z)=>[cx+x*mpp*(rear?-1:1),egoY-z*mpp];
+  c.font="10px Cascadia Mono,Consolas,monospace";c.textBaseline="middle";
+  // range rings
+  c.strokeStyle="#2a2b30";c.fillStyle="#5c5b57";c.lineWidth=1;c.textAlign="left";
+  [10,20,30].forEach(m=>{c.beginPath();c.arc(cx,egoY,m*mpp,Math.PI*1.12,Math.PI*1.88);c.stroke();c.fillText(m+" m",cx+6,egoY-m*mpp+10)});
+  // corridor the ego car will occupy
+  c.strokeStyle="#3b3a35";c.setLineDash([3,4]);const a=px(-1.3,0),b=px(1.3,RANGE);c.strokeRect(Math.min(a[0],b[0]),b[1],Math.abs(b[0]-a[0]),a[1]-b[1]);c.setLineDash([]);
+  [-1.75,1.75,5.25,-5.25].forEach(x=>{c.strokeStyle="#1f2024";c.beginPath();c.moveTo(...px(x,0));c.lineTo(...px(x,RANGE));c.stroke()});
+  // ego
+  const e=px(0,0);c.fillStyle="#ebe8e0";c.beginPath();c.moveTo(e[0],e[1]-9);c.lineTo(e[0]+7,e[1]+8);c.lineTo(e[0]-7,e[1]+8);c.closePath();c.fill();
+  c.fillStyle="#5c5b57";c.textAlign="center";c.fillText("YOU",e[0],e[1]+19);
+  // vehicles, with 1.5 s trails
+  const i=nearest(F,t,f=>f.t);if(i<0||Math.abs(F[i].t-t)>.4){c.fillStyle="#5c5b57";c.textAlign="center";c.fillText("no vehicles tracked at this moment",cx,H/2);return}
+  const trail=new Map();for(let k=i;k>=0&&F[i].t-F[k].t<=1.5;k--)for(const [id,cls,x,z,r] of F[k].rows){if(!trail.has(id))trail.set(id,[]);trail.get(id).push([x,z,r])}
+  trail.forEach(p=>{if(p.length<2)return;c.beginPath();p.forEach(([x,z],k)=>k?c.lineTo(...px(x,z)):c.moveTo(...px(x,z)));c.strokeStyle="rgba(235,232,224,.18)";c.lineWidth=1;c.stroke()});
+  for(const [id,cls,x,z,r] of F[i].rows){
+    if(z>RANGE+4||z<-2||Math.abs(x)>9)continue;
+    const [w,l]=SIZE[cls]||SIZE.car,p=px(x,z),pw=Math.max(5,w*mpp),pl=Math.max(7,l*mpp);
+    c.fillStyle=rcol(r);c.globalAlpha=r>=25?1:.55;c.fillRect(p[0]-pw/2,p[1]-pl/2,pw,pl);c.globalAlpha=1;
+    if(r>=50){c.strokeStyle=rcol(r);c.lineWidth=1;c.strokeRect(p[0]-pw/2-3,p[1]-pl/2-3,pw+6,pl+6);
+      c.fillStyle="#ebe8e0";c.textAlign="left";c.fillText(Math.round(z)+" m",p[0]+pw/2+8,p[1])}
+  }
+}
+
+/* ---------- timeline interaction ---------- */
+let drag=false;const tip=$("tip"),tlcv=$("tl");
+const tx=e=>Math.max(TL.PL,Math.min(e.clientX-tlcv.getBoundingClientRect().left,tlW-TL.PR));
+tlcv.addEventListener("pointerdown",e=>{drag=true;tlcv.setPointerCapture(e.pointerId);seek(invTX(tx(e)))});
+tlcv.addEventListener("pointerup",()=>drag=false);
+tlcv.addEventListener("pointermove",e=>{
+  hoverX=tx(e);if(drag)seek(invTX(hoverX));
+  const t=invTX(hoverX),s=sampleAt(t),y=e.clientY-tlcv.getBoundingClientRect().top;
+  const li=Math.floor((y-(TL.RU+TL.PK+12))/(TL.LH+TL.LG));let txt=fmt(t)+(s?"  peak "+Math.round(s[1]):"");
+  if(li>=0&&li<LANES.length){const l=LANES[li],k=nearest(l.pts,t,p=>p[0]);if(k>=0&&Math.abs(l.pts[k][0]-t)<.6)txt+="  ·  #"+l.id+" "+l.cls+" "+Math.round(l.pts[k][1])}
+  tip.style.display="block";tip.style.left=e.clientX+12+"px";tip.style.top=e.clientY-32+"px";tip.textContent=txt;drawTL($("v").currentTime||0)});
+tlcv.addEventListener("pointerleave",()=>{hoverX=null;tip.style.display="none";if(R)drawTL($("v").currentTime||0)});
+
+/* ---------- link + keyboard ---------- */
+function fromHash(){if(location.hash.length>1){jid=location.hash.slice(1);show("prog");t0=Date.now();poll()}}
+fromHash();addEventListener("hashchange",fromHash);
+addEventListener("keydown",e=>{
+  if(!R||$("res").classList.contains("hide"))return;const v=$("v");
+  if(e.code==="Space"){e.preventDefault();v.paused?v.play():v.pause()}
+  else if(e.key==="ArrowRight")seek(v.currentTime+5);else if(e.key==="ArrowLeft")seek(v.currentTime-5);
+  else if(e.key==="n"||e.key==="N"){const n=EV.find(x=>x.time_s-1.5>v.currentTime+.2);if(n)seek(n.time_s-1.5,true)}
+  else if(e.key==="p"||e.key==="P"){const p=[...EV].reverse().find(x=>x.time_s-1.5<v.currentTime-.2);if(p)seek(p.time_s-1.5,true)}
+});
+</script>
+</body>
+</html>
